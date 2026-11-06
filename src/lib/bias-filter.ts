@@ -445,6 +445,40 @@ export const HUMAN_TAGS_BLACKLIST = new Set([
   'performer',
   'saxophonist',
   'player',
+
+  // Actividades deportivas y humanas acuáticas (como kayak, remo, etc. donde hay personas a bordo)
+  'kayak',
+  'kayaking',
+  'paddle',
+  'paddling',
+  'rowing',
+  'rower',
+  'row',
+  'canoe',
+  'canoeing',
+  'athlete',
+  'swimmer',
+  'sportsman',
+  'sportsperson',
+  'surfer',
+  'surfing',
+  'diver',
+  'diving',
+  'cyclist',
+  'cycling',
+  'biker',
+  'runner',
+  'running',
+]);
+
+// Lista negra específica de autores que contienen personas/estereotipos o imágenes solicitadas para exclusión
+export const BLOCKED_AUTHORS = new Set([
+  'lifeofdapo',
+]);
+
+// IDs específicos de imágenes identificadas con personas a excluir
+export const BLOCKED_SPECIFIC_IMAGE_IDS = new Set([
+  5543935, // Foto kayak / remo de LifeOfDapo
 ]);
 
 /**
@@ -478,7 +512,7 @@ export function containsHumanBlacklistTags(tagsString: string): { containsHuman:
 
 /**
  * Filtra un conjunto de imágenes de Pixabay eliminando aquellas que contengan personas o rostros
- * identificados en sus etiquetas por la lista negra antisesgo.
+ * identificados en sus etiquetas por la lista negra antisesgo, autores bloqueados o IDs específicos.
  */
 export function filterImagesByHumanBlacklist(images: PixabayImage[]): {
   cleanImages: PixabayImage[];
@@ -490,6 +524,22 @@ export function filterImagesByHumanBlacklist(images: PixabayImage[]): {
   let filteredOutCount = 0;
 
   for (const img of images) {
+    // 1. Exclusión por ID específico
+    if (BLOCKED_SPECIFIC_IMAGE_IDS.has(img.id)) {
+      filteredOutCount++;
+      allMatchedTags.push(`id:${img.id}`);
+      continue;
+    }
+
+    // 2. Exclusión por autor en lista negra
+    const authorNorm = normalizeText(img.user || '');
+    if (BLOCKED_AUTHORS.has(authorNorm)) {
+      filteredOutCount++;
+      allMatchedTags.push(`autor:${img.user}`);
+      continue;
+    }
+
+    // 3. Exclusión por etiquetas de personas o actividades humanas
     const check = containsHumanBlacklistTags(img.tags);
     if (check.containsHuman) {
       filteredOutCount++;

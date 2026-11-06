@@ -126,7 +126,8 @@ async function testBiasFilter() {
   // Test: Blacklist tags detector
   const HUMAN_BLACKLIST = new Set([
     'person', 'people', 'human', 'man', 'men', 'woman', 'women', 'child', 'children',
-    'afro', 'almajiri', 'portrait', 'face', 'boy', 'girl', 'lady', 'gente', 'hombre', 'mujer'
+    'afro', 'almajiri', 'portrait', 'face', 'boy', 'girl', 'lady', 'gente', 'hombre', 'mujer',
+    'kayak', 'kayaking', 'paddle', 'paddling', 'rowing'
   ]);
 
   function isHumanTag(tagStr) {
@@ -146,8 +147,8 @@ async function testBiasFilter() {
     'Blacklist detecta y marca etiquetas de personas ("lady, female, woman...")'
   );
   recordResult(
-    !isHumanTag('kayak, paddling, nature, water sport, abuja'),
-    'Blacklist permite etiquetas de paisajes, naturaleza y deportes ("kayak, nature...")'
+    isHumanTag('kayak, kayaking, paddle, paddling, rowing'),
+    'Blacklist detecta y elimina actividades deportivas con humanos a bordo ("kayak, paddle...")'
   );
   recordResult(
     !isHumanTag('mountain, nature, peak, machu picchu, peru, landscape'),
