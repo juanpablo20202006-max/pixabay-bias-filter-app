@@ -20,6 +20,10 @@ import {
   CheckCircle2,
   XCircle,
   Sparkles,
+  ShieldX,
+  Server,
+  FolderLock,
+  Cpu,
 } from 'lucide-react';
 
 interface ToastMessage {
@@ -129,11 +133,11 @@ export default function Home() {
         setTotalHits(data.totalHits || 0);
 
         if (data.blacklistInfo && data.blacklistInfo.filteredOutCount > 0) {
-          addToast('info', `Blacklist: Se eliminaron ${data.blacklistInfo.filteredOutCount} imágenes con personas para mitigar sesgos.`);
+          addToast('info', `Blacklist: -${data.blacklistInfo.filteredOutCount} imágenes con personas eliminadas.`);
         } else if (data.biasAnalysis?.classification === 'ADVERTENCIA') {
-          addToast('info', 'Término sensible: Búsqueda permitida con supervisión de sesgos.');
+          addToast('info', 'Término sensible: Supervisión ética activa.');
         } else {
-          addToast('success', `Se encontraron ${data.hits?.length || 0} imágenes purgadas de sesgos.`);
+          addToast('success', `Pixabay devolvió ${data.hits?.length || 0} imágenes limpias.`);
         }
       } else {
         addToast('error', data.error || 'Ocurrió un error al consultar Pixabay.');
@@ -179,7 +183,7 @@ export default function Home() {
       if (data.duplicate) {
         addToast('warning', 'La imagen ya existe en tu colección de MongoDB.');
       } else if (data.ok) {
-        addToast('success', '¡Imagen guardada exitosamente en MongoDB!');
+        addToast('success', '¡Imagen guardada en MongoDB (saved_images)!');
         fetchSaved();
       } else {
         addToast('error', data.error || 'Error al guardar imagen.');
@@ -217,7 +221,7 @@ export default function Home() {
       const data = await res.json();
       if (data.ok) {
         setHistory([]);
-        addToast('info', 'Historial vaciado.');
+        addToast('info', 'Historial vaciado en MongoDB.');
       }
     } catch {
       addToast('error', 'No se pudo vaciar el historial.');
@@ -229,40 +233,38 @@ export default function Home() {
     checkHealth();
     fetchSaved();
     fetchHistory();
-    // Default initial search to display nature images on load
     handleSearch('nature');
   }, []);
 
-  // Determine saved IDs for instant button states
   const savedIdSet = new Set(savedImages.map((s) => s.pixabayId));
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
-      {/* Toast Notifications */}
-      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm">
+    <div className="min-h-screen flex flex-col bg-[#090d16] text-slate-100 font-sans selection:bg-teal-500/30 selection:text-teal-200">
+      {/* Toast Notifications Overlay */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`p-3.5 rounded-xl shadow-lg border text-xs font-medium flex items-center gap-2.5 animate-in slide-in-from-bottom-2 ${
+            className={`p-4 rounded-xl shadow-2xl border text-xs font-mono font-medium flex items-center gap-3 backdrop-blur-xl animate-in slide-in-from-bottom-3 pointer-events-auto ${
               t.type === 'success'
-                ? 'bg-emerald-900 text-white border-emerald-700'
+                ? 'bg-emerald-950/90 text-emerald-200 border-emerald-500/40 shadow-emerald-950/60'
                 : t.type === 'warning'
-                ? 'bg-amber-900 text-white border-amber-700'
+                ? 'bg-amber-950/90 text-amber-200 border-amber-500/40 shadow-amber-950/60'
                 : t.type === 'error'
-                ? 'bg-rose-900 text-white border-rose-700'
-                : 'bg-slate-900 text-white border-slate-700'
+                ? 'bg-rose-950/90 text-rose-200 border-rose-500/40 shadow-rose-950/60'
+                : 'bg-slate-900/90 text-teal-200 border-teal-500/40 shadow-teal-950/60'
             }`}
           >
             {t.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
             {t.type === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />}
             {t.type === 'error' && <XCircle className="w-4 h-4 text-rose-400 shrink-0" />}
             {t.type === 'info' && <Sparkles className="w-4 h-4 text-teal-400 shrink-0" />}
-            <span>{t.text}</span>
+            <span className="font-sans text-xs">{t.text}</span>
           </div>
         ))}
       </div>
 
-      {/* Header */}
+      {/* Modern High-Tech Navigation Bar */}
       <Header
         filterActive={filterActive}
         onToggleFilter={() => setFilterActive(!filterActive)}
@@ -289,19 +291,19 @@ export default function Home() {
           blacklistInfo={blacklistInfo}
         />
 
-        {/* Tabs Bar identical to Mockup */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-2 mb-6 gap-3">
-          <div className="flex items-center gap-2">
+        {/* High-Tech Tab Controls Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 pb-3 mb-6 gap-3">
+          <div className="flex items-center gap-2 p-1 rounded-xl bg-slate-950/80 border border-white/10">
             <button
               onClick={() => setActiveTab('pixabay')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition border ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-bold tracking-wider transition ${
                 activeTab === 'pixabay'
-                  ? 'bg-teal-600 text-white border-teal-600 shadow-sm shadow-teal-600/20'
-                  : 'bg-white text-slate-600 hover:text-slate-900 border-slate-200 hover:bg-slate-50'
+                  ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/25'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
               <ImageIcon className="w-4 h-4" />
-              <span>Galería Pixabay ({pixabayResults.length})</span>
+              <span>GALERÍA PIXABAY ({pixabayResults.length})</span>
             </button>
 
             <button
@@ -309,21 +311,21 @@ export default function Home() {
                 setActiveTab('mongo');
                 fetchSaved();
               }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition border ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-bold tracking-wider transition ${
                 activeTab === 'mongo'
-                  ? 'bg-teal-600 text-white border-teal-600 shadow-sm shadow-teal-600/20'
-                  : 'bg-white text-slate-600 hover:text-slate-900 border-slate-200 hover:bg-slate-50'
+                  ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/25'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
               <Database className="w-4 h-4" />
-              <span>Colección MongoDB ({savedImages.length})</span>
+              <span>COLECCIÓN MONGODB ({savedImages.length})</span>
             </button>
           </div>
 
-          {/* Right Wireframe Label identical to Mockup */}
-          <div className="text-xs font-mono text-slate-400 flex items-center gap-1.5 self-end sm:self-center">
-            <Layers className="w-3.5 h-3.5" />
-            <span>[ Wireframe View: Pixabay API Response Grid ]</span>
+          {/* Wireframe view badge identical to Mockup */}
+          <div className="text-xs font-mono text-teal-400/80 flex items-center gap-2 self-end sm:self-center px-3 py-1 rounded-lg glass-panel border-teal-500/20">
+            <Layers className="w-3.5 h-3.5 text-teal-400 animate-pulse" />
+            <span>[ WIREFRAME VIEW: PIXABAY API RESPONSE GRID ]</span>
           </div>
         </div>
 
@@ -333,30 +335,39 @@ export default function Home() {
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-                  <div key={n} className="bg-white rounded-xl border border-slate-200 p-4 animate-pulse space-y-3">
-                    <div className="aspect-[4/3] bg-slate-200 rounded-lg" />
-                    <div className="h-4 bg-slate-200 rounded w-3/4" />
-                    <div className="h-3 bg-slate-200 rounded w-1/2" />
-                    <div className="h-8 bg-slate-200 rounded" />
+                  <div key={n} className="glass-panel rounded-2xl p-4 animate-pulse space-y-3.5 border border-white/5">
+                    <div className="aspect-[4/3] bg-slate-800/60 rounded-xl" />
+                    <div className="h-4 bg-slate-800/60 rounded-md w-3/4" />
+                    <div className="h-3 bg-slate-800/60 rounded-md w-1/2" />
+                    <div className="h-9 bg-slate-800/60 rounded-xl" />
                   </div>
                 ))}
               </div>
             ) : isBlocked ? (
-              <div className="bg-white border border-rose-200 rounded-2xl p-10 text-center max-w-xl mx-auto shadow-sm">
-                <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <XCircle className="w-8 h-8" />
+              <div className="glass-panel border border-rose-500/30 rounded-3xl p-10 text-center max-w-xl mx-auto shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="w-16 h-16 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-500/40">
+                  <ShieldX className="w-9 h-9" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Consulta Bloqueada por Filtro Antisesgo</h3>
-                <p className="text-sm text-slate-600 mb-4">{biasAnalysis?.reason}</p>
-                <div className="p-3 bg-slate-50 rounded-lg text-xs font-mono text-slate-500 border border-slate-200">
-                  Política: La API de Pixabay no fue consultada para evitar sesgos discriminatorios. La acción quedó registrada en MongoDB para auditoría.
+                <h3 className="text-lg font-mono font-bold text-white mb-2 uppercase tracking-wide">
+                  CONSULTA CENSURADA POR GUARDIA ÉTICA
+                </h3>
+                <p className="text-sm text-slate-300 mb-5 font-sans leading-relaxed">
+                  {biasAnalysis?.reason}
+                </p>
+                <div className="p-3.5 bg-black/50 rounded-xl text-xs font-mono text-slate-400 border border-white/10 text-left space-y-1">
+                  <div className="text-teal-400 font-bold">PROTOCOLO DE SEGURIDAD ACTIVADO:</div>
+                  <div>&bull; La API de Pixabay NO fue consultada.</div>
+                  <div>&bull; Se registró el intento en MongoDB (<code className="text-rose-300">search_history</code>) para auditoría.</div>
                 </div>
               </div>
             ) : pixabayResults.length === 0 ? (
-              <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500">
-                <ImageIcon className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                <p className="font-medium text-slate-700">No se encontraron imágenes para "{query}".</p>
-                <p className="text-xs text-slate-400 mt-1">Prueba con palabras clave como "technology", "nature", "black" o "poor".</p>
+              <div className="glass-panel border border-white/10 rounded-3xl p-14 text-center text-slate-400 max-w-md mx-auto">
+                <ImageIcon className="w-12 h-12 mx-auto mb-4 text-slate-600" />
+                <h3 className="font-mono font-bold text-white text-sm mb-1 uppercase">SIN RESULTADOS DISPONIBLES</h3>
+                <p className="text-xs text-slate-400">
+                  No se encontraron imágenes para "{query}". Prueba con palabras clave del taller como "nature", "technology", "nigeria" o "peru".
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -379,19 +390,26 @@ export default function Home() {
         {activeTab === 'mongo' && (
           <div>
             {savedImages.length === 0 ? (
-              <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500">
-                <Database className="w-12 h-12 mx-auto mb-3 text-teal-500/40" />
-                <h3 className="text-base font-bold text-slate-800 mb-1">Colección NoSQL Vacía</h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Aún no has guardado imágenes en la colección <code className="bg-slate-100 px-1 py-0.5 rounded text-teal-700">saved_images</code> de MongoDB.
-                  Realiza una búsqueda en la pestaña Pixabay y pulsa <strong>"+ Guardar en Mongo"</strong>.
+              <div className="glass-panel border border-white/10 rounded-3xl p-14 text-center text-slate-400 max-w-md mx-auto">
+                <FolderLock className="w-14 h-14 mx-auto mb-4 text-teal-400/50" />
+                <h3 className="font-mono font-bold text-white text-base mb-1 uppercase tracking-wide">
+                  COLECCIÓN NOSQL VACÍA
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Aún no has guardado registros en la colección <code className="text-teal-300 font-mono">saved_images</code> de MongoDB.
+                  Realiza una consulta en la galería de Pixabay y haz clic en <strong>"+ GUARDAR EN MONGO"</strong>.
                 </p>
               </div>
             ) : (
               <div>
-                <div className="mb-4 flex items-center justify-between text-xs text-slate-500 bg-white p-3 rounded-xl border border-slate-200">
-                  <span>Mostrando {savedImages.length} imágenes persistidas en base de datos <strong>pixabay_db</strong></span>
-                  <span className="font-mono text-emerald-600 font-semibold">Persistencia Real Docker 7 / Atlas</span>
+                <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between text-xs font-mono text-slate-400 glass-panel p-4 rounded-2xl border border-white/10 gap-2">
+                  <div className="flex items-center gap-2 text-slate-300">
+                    <Database className="w-4 h-4 text-teal-400" />
+                    <span>Mostrando <strong className="text-white">{savedImages.length}</strong> imágenes persistidas en base de datos: <strong className="text-teal-300">pixabay_db</strong></span>
+                  </div>
+                  <span className="text-emerald-400 font-bold px-2.5 py-1 rounded bg-emerald-950/80 border border-emerald-500/40 text-[11px] self-start sm:self-auto">
+                    PERSISTENCIA REAL DOCKER 7
+                  </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {savedImages.map((img) => (
@@ -419,15 +437,21 @@ export default function Home() {
         onRefreshHistory={fetchHistory}
       />
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-auto py-6 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <div>
-            <p className="font-medium text-slate-700">Taller Práctico: Pixabay API + MongoDB NoSQL + Filtro Antisesgo</p>
-            <p className="text-[11px] text-slate-400">Arquitectura Limpia &bull; Next.js 14 &bull; TypeScript &bull; Docker MongoDB 7</p>
+      {/* High-Tech Footer with System Telemetry */}
+      <footer className="border-t border-white/10 glass-panel mt-auto py-6 text-xs font-mono text-slate-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-left">
+          <div className="flex items-center gap-2">
+            <Server className="w-4 h-4 text-teal-400" />
+            <span className="text-slate-300 font-semibold">TALLER PRÁCTICO: PIXABAY + MONGODB + FILTRO ANTISESGO</span>
           </div>
-          <div className="font-mono text-[11px] text-slate-400">
-            Backend Port: 3001 &bull; Mongo Port: 27017
+          <div className="flex items-center gap-4 text-[11px] text-slate-500 flex-wrap justify-center">
+            <span>Next.js 14 App Router</span>
+            <span>&bull;</span>
+            <span>Docker Mongo 7 Port: 27017</span>
+            <span>&bull;</span>
+            <span>API Port: 3001</span>
+            <span>&bull;</span>
+            <span className="text-teal-400">Collaborator: Alejo0101</span>
           </div>
         </div>
       </footer>
