@@ -469,16 +469,58 @@ export const HUMAN_TAGS_BLACKLIST = new Set([
   'biker',
   'runner',
   'running',
+
+  // Manifestaciones, protestas, marchas y activismo con aglomeraciones de personas
+  'protest',
+  'protests',
+  'protester',
+  'protesters',
+  'protestor',
+  'protestors',
+  'protesta',
+  'protestas',
+  'demonstration',
+  'demonstrations',
+  'demonstrator',
+  'demonstrators',
+  'manifestacion',
+  'manifestaciones',
+  'manifestante',
+  'manifestantes',
+  'march',
+  'marches',
+  'marching',
+  'marcha',
+  'marchas',
+  'rally',
+  'rallies',
+  'mitin',
+  'motin',
+  'riot',
+  'riots',
+  'strike',
+  'huelga',
+  'huelguistas',
+  'activism',
+  'activist',
+  'activists',
+  'activismo',
+  'activista',
+  'activistas',
+  'blm',
+  'black lives matter',
 ]);
 
 // Lista negra específica de autores que contienen personas/estereotipos o imágenes solicitadas para exclusión
 export const BLOCKED_AUTHORS = new Set([
   'lifeofdapo',
+  'ornaw',
 ]);
 
 // IDs específicos de imágenes identificadas con personas a excluir
 export const BLOCKED_SPECIFIC_IMAGE_IDS = new Set([
   5543935, // Foto kayak / remo de LifeOfDapo
+  5251408, // Foto black lives matter, protest de OrnaW
 ]);
 
 /**
@@ -488,7 +530,24 @@ export function containsHumanBlacklistTags(tagsString: string): { containsHuman:
   if (!tagsString) return { containsHuman: false, matchedTags: [] };
 
   const rawTags = tagsString.split(',').map((t) => normalizeText(t)).filter(Boolean);
+  const normalizedFull = normalizeText(tagsString);
   const matched: string[] = [];
+
+  // Check multi-word blacklist phrases
+  const multiWordPhrases = [
+    'black lives matter',
+    'black person',
+    'african american',
+    'old man',
+    'old woman',
+    'native person',
+    'indigenous person',
+  ];
+  for (const phrase of multiWordPhrases) {
+    if (normalizedFull.includes(phrase)) {
+      matched.push(phrase);
+    }
+  }
 
   for (const tag of rawTags) {
     if (HUMAN_TAGS_BLACKLIST.has(tag)) {

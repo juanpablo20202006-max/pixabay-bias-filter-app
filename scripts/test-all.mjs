@@ -127,7 +127,8 @@ async function testBiasFilter() {
   const HUMAN_BLACKLIST = new Set([
     'person', 'people', 'human', 'man', 'men', 'woman', 'women', 'child', 'children',
     'afro', 'almajiri', 'portrait', 'face', 'boy', 'girl', 'lady', 'gente', 'hombre', 'mujer',
-    'kayak', 'kayaking', 'paddle', 'paddling', 'rowing'
+    'kayak', 'kayaking', 'paddle', 'paddling', 'rowing',
+    'protest', 'protester', 'protesters', 'demonstration', 'march', 'rally', 'blm'
   ]);
 
   function isHumanTag(tagStr) {
@@ -149,6 +150,10 @@ async function testBiasFilter() {
   recordResult(
     isHumanTag('kayak, kayaking, paddle, paddling, rowing'),
     'Blacklist detecta y elimina actividades deportivas con humanos a bordo ("kayak, paddle...")'
+  );
+  recordResult(
+    isHumanTag('black lives matter, protest, demonstration, march, rally'),
+    'Blacklist detecta y elimina protestas/aglomeraciones ("protest, demonstration, blm...")'
   );
   recordResult(
     !isHumanTag('mountain, nature, peak, machu picchu, peru, landscape'),
